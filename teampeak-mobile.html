@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeamPeak – Mobile App</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --navy:#192231;
+  --teal:#0b7a6a;
+  --teal-mid:#13a48e;
+  --teal-light:#e4f5f2;
+  --accent:#e8621a;
+  --white:#ffffff;
+  --bg:#f2f5f9;
+  --border:#dce5ef;
+  --text:#1a2332;
+  --muted:#7a8ea8;
+  --card:#ffffff;
+}
+body{
+  font-family:'Open Sans',sans-serif;
+  background:#1a1a2e;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  padding:20px;
+}
+
+/* PHONE FRAME */
+.phone-frame{
+  width:390px;
+  height:844px;
+  background:var(--white);
+  border-radius:50px;
+  overflow:hidden;
+  position:relative;
+  box-shadow:0 40px 120px rgba(0,0,0,0.6),0 0 0 10px #111,0 0 0 12px #333;
+  display:flex;
+  flex-direction:column;
+}
+.phone-notch{
+  position:absolute;
+  top:0;left:50%;
+  transform:translateX(-50%);
+  width:126px;height:34px;
+  background:#111;
+  border-radius:0 0 20px 20px;
+  z-index:999;
+}
+.status-bar{
+  height:44px;
+  background:var(--navy);
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  padding:0 24px 8px;
+  flex-shrink:0;
+  position:relative;
+  z-index:10;
+}
+.status-time{color:white;font-size:13px;font-weight:600;}
+.status-icons{display:flex;gap:5px;align-items:center;}
+.status-icons svg{width:14px;height:14px;fill:white;}
+
+/* APP SHELL */
+.app-shell{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+
+/* SCREENS CONTAINER */
+.screens{flex:1;overflow:hidden;position:relative;}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;transform:translateX(100%);transition:transform 0.3s ease;background:var(--bg);}
+.screen.active{transform:translateX(0);}
+.screen.slide-left{transform:translateX(-30%);}
+
+/* TOPBAR */
+.topbar{
+  height:56px;
+  background:var(--navy);
+  display:flex;
+  align-items:center;
+  padding:0 16px;
+  gap:12px;
+  position:sticky;top:0;z-index:50;
+  flex-shrink:0;
+}
+.menu-btn{
+  background:none;border:none;cursor:pointer;
+  display:flex;flex-direction:column;gap:5px;
+  padding:6px;border-radius:8px;
+}
+.menu-btn span{display:block;width:20px;height:2px;background:white;border-radius:2px;}
+.topbar-title{flex:1;color:white;font-size:16px;font-weight:700;letter-spacing:-0.2px;}
+.topbar-actions{display:flex;gap:4px;}
+.tb-btn{background:none;border:none;cursor:pointer;padding:7px;border-radius:8px;color:white;position:relative;}
+.tb-btn svg{width:20px;height:20px;display:block;}
+.notif-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;background:var(--accent);border-radius:50%;border:2px solid var(--navy);}
+
+/* SIDEBAR */
+.sidebar-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,0);
+  z-index:200;pointer-events:none;transition:background 0.3s;
+}
+.sidebar-overlay.open{background:rgba(0,0,0,0.5);pointer-events:all;}
+.sidebar{
+  position:absolute;left:-280px;top:0;width:280px;height:100%;
+  background:var(--navy);z-index:201;
+  transition:left 0.3s ease;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.sidebar.open{left:0;}
+.sb-header{
+  padding:52px 20px 16px;
+  background:linear-gradient(180deg,#0f172a 0%,var(--navy) 100%);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+.sb-logo{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.sb-logo-icon{
+  width:36px;height:36px;background:var(--teal);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+}
+.sb-logo-icon svg{width:20px;height:20px;fill:white;}
+.sb-logo-text{color:white;font-size:18px;font-weight:800;letter-spacing:-0.5px;}
+.sb-logo-sub{color:rgba(255,255,255,0.4);font-size:11px;}
+.sb-user{display:flex;align-items:center;gap:10px;}
+.sb-avatar{
+  width:42px;height:42px;border-radius:50%;
+  background:var(--teal);display:flex;align-items:center;justify-content:center;
+  color:white;font-size:15px;font-weight:700;flex-shrink:0;overflow:hidden;
+}
+.sb-avatar img{width:100%;height:100%;object-fit:cover;}
+.sb-uname{color:white;font-size:14px;font-weight:600;}
+.sb-urole{margin-top:2px;}
+.role-pill{background:var(--teal);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;}
+.sb-nav{flex:1;overflow-y:auto;padding:12px 0;}
+.sb-section-lbl{
+  color:rgba(255,255,255,0.3);font-size:10px;font-weight:700;
+  letter-spacing:1.2px;text-transform:uppercase;
+  padding:12px 20px 4px;
+}
+.sb-nav-item{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 20px;cursor:pointer;
+  border-left:3px solid transparent;
+  color:rgba(255,255,255,0.65);font-size:14px;font-weight:500;
+  transition:all 0.15s;
+}
+.sb-nav-item:active,.sb-nav-item:hover{background:rgba(255,255,255,0.06);color:white;}
+.sb-nav-item.active{background:rgba(11,122,106,0.2);border-left-color:var(--teal-mid);color:white;}
+.sb-nav-item .sni-icon{font-size:17px;width:22px;text-align:center;}
+.sb-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,0.08);}
+.switch-btn{
+  width:100%;background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:8px;padding:10px 14px;
+  cursor:pointer;color:rgba(255,255,255,0.65);
+  font-size:12px;font-weight:600;
+  display:flex;align-items:center;gap:8px;
+  font-family:'Open Sans',sans-serif;
+}
+.switch-btn:active{background:rgba(255,255,255,0.1);}
+.sb-close{position:absolute;top:12px;right:12px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer;padding:4px;}
+
+/* BOTTOM NAV */
+.bottom-nav{
+  height:72px;background:var(--navy);
+  display:flex;border-top:1px solid rgba(255,255,255,0.08);
+  padding-bottom:8px;flex-shrink:0;
+}
+.bn-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;cursor:pointer;
+  border:none;background:none;color:rgba(255,255,255,0.45);
+  font-size:10px;font-weight:600;font-family:'Open Sans',sans-serif;
+  padding-top:8px;transition:color 0.15s;
+}
+.bn-item.active{color:var(--teal-mid);}
+.bn-item svg{width:20px;height:20px;display:block;}
+
+/* AUTH SCREENS */
+.auth-screen{
+  position:absolute;inset:0;
+  background:var(--navy);
+  display:flex;flex-direction:column;
+  overflow-y:auto;z-index:300;
+}
+.auth-screen.hidden{display:none;}
+.auth-hero{
+  background:linear-gradient(160deg,#0f172a 0%,var(--teal) 100%);
+  padding:60px 28px 36px;
+  text-align:center;
+  position:relative;overflow:hidden;
+}
+.auth-hero::before{
+  content:'';position:absolute;top:-40px;right:-40px;
+  width:180px;height:180px;border-radius:50%;
+  background:rgba(255,255,255,0.05);
+}
+.auth-hero::after{
+  content:'';position:absolute;bottom:-60px;left:-30px;
+  width:200px;height:200px;border-radius:50%;
+  background:rgba(255,255,255,0.04);
+}
+.auth-logo{
+  width:64px;height:64px;background:white;border-radius:18px;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 16px;
+}
+.auth-logo svg{width:36px;height:36px;fill:var(--teal);}
+.auth-app-name{color:white;font-size:28px;font-weight:800;letter-spacing:-0.5px;}
+.auth-tagline{color:rgba(255,255,255,0.6);font-size:13px;margin-top:6px;}
+.auth-body{flex:1;padding:24px 24px 32px;background:var(--bg);}
+.auth-tabs{display:flex;background:white;border:1px solid var(--border);border-radius:10px;padding:3px;margin-bottom:20px;}
+.auth-tab{flex:1;padding:9px;border:none;background:none;cursor:pointer;border-radius:7px;font-size:13px;font-weight:600;color:var(--muted);font-family:'Open Sans',sans-serif;}
+.auth-tab.active{background:var(--navy);color:white;}
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;}
+.form-input{
+  width:100%;border:1.5px solid var(--border);border-radius:10px;
+  padding:12px 14px;font-size:14px;font-family:'Open Sans',sans-serif;
+  outline:none;color:var(--text);background:white;
+  transition:border-color 0.15s;
+}
+.form-input:focus{border-color:var(--teal);}
+.form-hint{font-size:11px;color:var(--muted);margin-top:4px;}
+.role-select{display:flex;gap:8px;margin-bottom:14px;}
+.role-opt{
+  flex:1;padding:10px;border:1.5px solid var(--border);
+  border-radius:10px;text-align:center;cursor:pointer;
+  background:white;transition:all 0.15s;
+}
+.role-opt.selected{border-color:var(--teal);background:var(--teal-light);}
+.role-opt-icon{font-size:20px;display:block;margin-bottom:4px;}
+.role-opt-lbl{font-size:12px;font-weight:600;color:var(--text);}
+.btn-primary{
+  width:100%;background:var(--teal);color:white;border:none;
+  border-radius:12px;padding:15px;font-size:15px;font-weight:700;
+  cursor:pointer;font-family:'Open Sans',sans-serif;margin-top:6px;
+  transition:background 0.15s;
+}
+.btn-primary:active{background:#0a6657;}
+.divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--muted);font-size:12px;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.btn-secondary-full{
+  width:100%;background:white;color:var(--text);
+  border:1.5px solid var(--border);border-radius:12px;
+  padding:13px;font-size:14px;font-weight:600;
+  cursor:pointer;font-family:'Open Sans',sans-serif;
+}
+
+/* CONTENT CARDS */
+.content-pad{padding:16px;}
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.section-hdr h2{font-size:15px;font-weight:700;color:var(--text);}
+.see-all{background:none;border:none;color:var(--teal);font-size:12px;font-weight:600;cursor:pointer;font-family:'Open Sans',sans-serif;}
+.card{background:white;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+
+/* DASHBOARD */
+.dash-hero{
+  background:linear-gradient(135deg,var(--navy) 0%,#0d3d30 100%);
+  padding:20px 16px 24px;
+  position:relative;overflow:hidden;
+}
+.dash-hero::after{
+  content:'';position:absolute;top:-30px;right:-30px;
+  width:120px;height:120px;border-radius:50%;
+  background:rgba(11,122,106,0.3);
+}
+.dash-greeting{color:white;font-size:20px;font-weight:800;letter-spacing:-0.3px;}
+.dash-date{color:rgba(255,255,255,0.5);font-size:12px;margin-top:3px;}
+.dash-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:16px 16px 0;}
+.dstat{background:white;border:1px solid var(--border);border-radius:12px;padding:12px 10px;text-align:center;}
+.dstat-val{font-size:20px;font-weight:800;color:var(--navy);}
+.dstat-lbl{font-size:10px;color:var(--muted);font-weight:600;margin-top:2px;}
+.ai-insight{
+  background:var(--navy);border-radius:14px;padding:14px 16px;margin:12px 16px;
+  position:relative;overflow:hidden;
+}
+.ai-insight::before{content:'';position:absolute;top:-10px;right:-10px;width:60px;height:60px;border-radius:50%;background:rgba(11,122,106,0.25);}
+.ai-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.ai-txt{font-size:13px;color:white;line-height:1.6;}
+.ai-refresh{background:rgba(255,255,255,0.1);border:none;color:rgba(255,255,255,0.7);padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;margin-top:8px;font-family:'Open Sans',sans-serif;}
+
+/* EVENT ITEMS */
+.event-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f6fa;}
+.event-row:last-child{border-bottom:none;}
+.ev-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.dot-g{background:#22c55e;}.dot-o{background:var(--accent);}.dot-b{background:#3b82f6;}
+.ev-info{flex:1;}
+.ev-title{font-size:13px;font-weight:600;color:var(--text);}
+.ev-time{font-size:11px;color:var(--muted);}
+.ev-tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;}
+.tag-p{background:var(--teal-light);color:var(--teal);}
+.tag-g{background:#fff3ee;color:var(--accent);}
+.tag-m{background:#eef2ff;color:#6366f1;}
+
+/* WORKOUT */
+.workout-chip-row{display:flex;gap:6px;overflow-x:auto;padding:0 16px 12px;scrollbar-width:none;}
+.workout-chip-row::-webkit-scrollbar{display:none;}
+.wchip{background:white;border:1.5px solid var(--border);border-radius:20px;padding:7px 14px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.wchip.active{background:var(--navy);border-color:var(--navy);color:white;}
+.wo-card{background:white;border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:10px;}
+.wo-hdr{background:var(--teal);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;}
+.wo-title{color:white;font-size:14px;font-weight:700;}
+.wo-badge{background:rgba(255,255,255,0.2);color:white;font-size:11px;padding:3px 9px;border-radius:20px;}
+.wo-body{padding:12px 14px;}
+.ex-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f6fa;}
+.ex-row:last-child{border-bottom:none;}
+.ex-n{width:22px;height:22px;background:var(--teal-light);color:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
+.ex-name{flex:1;font-size:13px;font-weight:600;color:var(--text);}
+.ex-det{font-size:11px;color:var(--muted);}
+.coach-actions{display:flex;gap:6px;margin-top:10px;}
+.cbtn{border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Open Sans',sans-serif;}
+.cbtn-edit{background:var(--teal-light);color:var(--teal);}
+.cbtn-del{background:#fef2f2;color:#dc2626;}
+.add-fab{
+  position:fixed;bottom:90px;right:20px;
+  width:52px;height:52px;border-radius:50%;
+  background:var(--teal);border:none;color:white;
+  font-size:24px;cursor:pointer;
+  box-shadow:0 4px 20px rgba(11,122,106,0.4);
+  display:none;z-index:100;
+  align-items:center;justify-content:center;
+}
+
+/* MEALS */
+.meal-target{background:var(--teal-light);border:1px solid #9fddd0;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;font-weight:600;color:var(--teal);}
+.meal-card{background:white;border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+.meal-icon{width:40px;height:40px;background:var(--teal-light);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.meal-info{flex:1;}
+.meal-name{font-size:14px;font-weight:600;color:var(--text);}
+.meal-meta{font-size:11px;color:var(--muted);margin-top:1px;}
+.macros{display:flex;gap:5px;margin-top:5px;}
+.macro{font-size:10px;background:#f2f5f9;color:var(--muted);padding:2px 6px;border-radius:4px;font-weight:600;}
+.meal-cal{font-size:13px;font-weight:700;color:var(--teal);white-space:nowrap;}
+
+/* CALENDAR */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 0;}
+.cal-month-title{font-size:16px;font-weight:700;color:var(--text);}
+.cal-arrow{background:white;border:1px solid var(--border);border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--text);}
+.cal-view-btns{display:flex;gap:3px;background:white;border:1px solid var(--border);border-radius:8px;padding:3px;margin:12px 16px 0;}
+.cvbtn{flex:1;padding:6px;border:none;background:none;cursor:pointer;border-radius:5px;font-size:12px;font-weight:600;color:var(--muted);font-family:'Open Sans',sans-serif;}
+.cvbtn.active{background:var(--navy);color:white;}
+.cal-grid-wrap{margin:12px 16px 0;background:white;border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.cal-days-hdr{display:grid;grid-template-columns:repeat(7,1fr);background:#f8fafc;}
+.cdn{text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:9px 0;text-transform:uppercase;}
+.cal-days-grid{display:grid;grid-template-columns:repeat(7,1fr);}
+.cal-day{border:0.5px solid var(--border);padding:5px;min-height:54px;cursor:pointer;}
+.day-num-wrap{width:24px;height:24px;display:flex;align-items:center;justify-content:center;margin-bottom:3px;}
+.day-num{font-size:12px;font-weight:600;color:var(--text);}
+.cal-day.today .day-num-wrap{background:var(--teal);border-radius:50%;}
+.cal-day.today .day-num{color:white;}
+.cal-day.other .day-num{color:var(--border);}
+.ce{font-size:9px;font-weight:600;padding:1px 4px;border-radius:3px;margin-bottom:1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.ce-p{background:var(--teal-light);color:var(--teal);}
+.ce-g{background:#fff3ee;color:var(--accent);}
+
+/* CHAT */
+.chat-list-item{display:flex;align-items:center;gap:10px;background:white;border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;}
+.chat-list-item:active{background:#f8fafc;}
+.c-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:700;flex-shrink:0;}
+.c-info{flex:1;}
+.c-name{font-size:14px;font-weight:600;color:var(--text);}
+.c-preview{font-size:12px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;}
+.unread-badge{background:var(--teal);color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;}
+
+/* CHAT WINDOW SCREEN */
+.chat-win-topbar{
+  height:56px;background:var(--navy);
+  display:flex;align-items:center;gap:10px;padding:0 14px;
+  position:sticky;top:0;z-index:50;
+}
+.back-btn{background:none;border:none;color:white;font-size:20px;cursor:pointer;padding:4px;}
+.chat-messages-area{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.msg{max-width:78%;}
+.msg.mine{align-self:flex-end;}
+.msg.theirs{align-self:flex-start;}
+.msg-bubble{padding:10px 13px;border-radius:14px;font-size:13px;line-height:1.5;}
+.msg.mine .msg-bubble{background:var(--teal);color:white;border-bottom-right-radius:4px;}
+.msg.theirs .msg-bubble{background:white;color:var(--text);border:1px solid var(--border);border-bottom-left-radius:4px;}
+.msg-time{font-size:10px;color:var(--muted);margin-top:3px;text-align:right;}
+.chat-input-row{padding:10px 12px;background:white;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;}
+.chat-txt-input{flex:1;border:1.5px solid var(--border);border-radius:22px;padding:10px 14px;font-size:13px;font-family:'Open Sans',sans-serif;outline:none;}
+.chat-txt-input:focus{border-color:var(--teal);}
+.send-btn{background:var(--teal);color:white;border:none;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.send-btn svg{width:16px;height:16px;}
+
+/* NOTIFICATIONS */
+.notif-hdr-row{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 8px;}
+.notif-hdr-row h2{font-size:17px;font-weight:700;color:var(--text);}
+.clear-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:'Open Sans',sans-serif;}
+.notif-item{background:white;border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin:0 16px 8px;display:flex;gap:10px;}
+.notif-item.unread{border-left:3px solid var(--teal);}
+.notif-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.ni-g{background:var(--teal-light);}
+.ni-o{background:#fff3ee;}
+.ni-b{background:#eef2ff;}
+.notif-content{flex:1;}
+.notif-title{font-size:13px;font-weight:600;color:var(--text);}
+.notif-body{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5;}
+.notif-time{font-size:10px;color:var(--muted);margin-top:4px;}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px;}
+
+/* PLAYERS SCREEN */
+.player-card{background:white;border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;}
+.player-card:active{background:#f8fafc;}
+.pl-avatar{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:16px;font-weight:700;flex-shrink:0;}
+.pl-info{flex:1;}
+.pl-name{font-size:14px;font-weight:700;color:var(--text);}
+.pl-pos{font-size:12px;color:var(--muted);}
+.pl-stats{display:flex;gap:10px;}
+.pl-s{text-align:center;}
+.pl-sv{font-size:14px;font-weight:700;color:var(--navy);}
+.pl-sl{font-size:10px;color:var(--muted);}
+
+/* PROFILE SCREEN */
+.profile-hero{background:var(--navy);padding:24px 16px 20px;text-align:center;}
+.profile-avatar-lg{width:72px;height:72px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;color:white;font-size:24px;font-weight:800;margin:0 auto 10px;position:relative;}
+.edit-avatar-btn{position:absolute;bottom:0;right:0;width:22px;height:22px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;}
+.profile-name{color:white;font-size:20px;font-weight:800;}
+.profile-role-txt{color:rgba(255,255,255,0.5);font-size:13px;margin-top:3px;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 16px 0;}
+
+/* MODAL */
+.modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);z-index:400;pointer-events:none;transition:background 0.3s;display:flex;align-items:flex-end;}
+.modal-overlay.open{background:rgba(0,0,0,0.5);pointer-events:all;}
+.modal-sheet{background:white;border-radius:20px 20px 0 0;width:100%;max-height:85%;overflow-y:auto;transform:translateY(100%);transition:transform 0.3s ease;padding-bottom:20px;}
+.modal-overlay.open .modal-sheet{transform:translateY(0);}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 16px;}
+.modal-hdr{padding:0 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-size:16px;font-weight:700;color:var(--text);}
+.modal-close{background:none;border:none;font-size:22px;color:var(--muted);cursor:pointer;}
+.modal-body{padding:16px 20px;}
+.modal-footer{display:flex;gap:8px;padding:0 20px;margin-top:16px;}
+.btn-sec{flex:1;background:white;border:1.5px solid var(--border);border-radius:10px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Open Sans',sans-serif;color:var(--muted);}
+.btn-prim{flex:2;background:var(--teal);color:white;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Open Sans',sans-serif;}
+.form-select{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-size:14px;font-family:'Open Sans',sans-serif;outline:none;color:var(--text);background:white;-webkit-appearance:none;}
+.form-select:focus{border-color:var(--teal);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+textarea.form-input{resize:none;}
+
+/* CHAT SCREEN (full) */
+#screen-chatwin{background:var(--bg);display:flex;flex-direction:column;}
+#screen-chatwin .chat-messages-area{background:var(--bg);}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-notch"></div>
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <span class="status-time">9:41</span>
+    <div class="status-icons">
+      <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 0 0-6 0zm-4-4l2 2a7.074 7.074 0 0 1 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+    </div>
+  </div>
+
+  <!-- AUTH SCREENS -->
+  <div class="auth-screen" id="authScreen">
+    <div class="auth-hero">
+      <div class="auth-logo">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.8l7.3 3.7-7.3 3.7L4.7 8.5 12 4.8zM4 10.2l7 3.5v6.5l-7-3.5v-6.5zm9 10v-6.5l7-3.5v6.5l-7 3.5z"/></svg>
+      </div>
+      <div class="auth-app-name">TeamPeak</div>
+      <div class="auth-tagline">Train smarter. Eat better. Win together.</div>
+    </div>
+
+    <div class="auth-body">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</button>
+        <button class="auth-tab" onclick="switchAuthTab('register',this)">Create Account</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="loginForm">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" placeholder="you@teampeak.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" type="password" placeholder="••••••••">
+        </div>
+        <button class="btn-primary" onclick="enterApp('player')">Sign In</button>
+        <div class="divider">or</div>
+        <button class="btn-secondary-full" onclick="enterApp('coach')">Sign in as Coach (Demo)</button>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div id="registerForm" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-input" type="text" placeholder="Jordan Smith">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" placeholder="you@teampeak.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" type="password" placeholder="Create a password">
+        </div>
+        <div class="form-group">
+          <label class="form-label">I am a</label>
+          <div class="role-select">
+            <div class="role-opt selected" onclick="selectRole(this,'player')">
+              <span class="role-opt-icon">🏃</span>
+              <span class="role-opt-lbl">Player</span>
+            </div>
+            <div class="role-opt" onclick="selectRole(this,'coach')">
+              <span class="role-opt-icon">📋</span>
+              <span class="role-opt-lbl">Coach</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Team Code <span style="font-size:10px;color:var(--muted);text-transform:none;font-weight:400;">(optional)</span></label>
+          <input class="form-input" type="text" placeholder="e.g. PEAK2026" style="text-transform:uppercase;">
+          <div class="form-hint">Ask your coach for your team's code to join their roster.</div>
+        </div>
+        <button class="btn-primary" onclick="enterApp('player')">Create Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP SHELL -->
+  <div class="app-shell" id="appShell" style="display:none;">
+
+    <!-- SIDEBAR OVERLAY -->
+    <div class="sidebar-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+      <button class="sb-close" onclick="closeSidebar()">×</button>
+      <div class="sb-header">
+        <div class="sb-logo">
+          <div class="sb-logo-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.8l7.3 3.7-7.3 3.7L4.7 8.5 12 4.8zM4 10.2l7 3.5v6.5l-7-3.5v-6.5zm9 10v-6.5l7-3.5v6.5l-7 3.5z"/></svg>
+          </div>
+          <div>
+            <div class="sb-logo-text">TeamPeak</div>
+            <div class="sb-logo-sub" id="sbRoleSub">Player Dashboard</div>
+          </div>
+        </div>
+        <div class="sb-user">
+          <div class="sb-avatar" id="sbAvatar">JS</div>
+          <div>
+            <div class="sb-uname" id="sbName">Jordan Smith</div>
+            <div class="sb-urole"><span class="role-pill" id="sbRolePill">Player</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="sb-nav" id="sbNav"></div>
+      <div class="sb-footer">
+        <button class="switch-btn" onclick="switchRole()">
+          <span>⇄</span> Switch to <span id="switchLbl">Coach View</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- SCREENS -->
+    <div class="screens" id="screens">
+
+      <!-- DASHBOARD -->
+      <div class="screen active" id="screen-dashboard">
+        <div style="position:sticky;top:0;z-index:50;">
+          <div class="dash-hero">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <div class="dash-greeting" id="dashGreeting">Morning, Jordan! 👋</div>
+                <div class="dash-date" id="dashDate">Wednesday, Apr 8, 2026</div>
+              </div>
+              <button class="menu-btn" onclick="openSidebar()" style="position:static;">
+                <span></span><span></span><span></span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="dash-stats">
+          <div class="dstat"><div class="dstat-val">5</div><div class="dstat-lbl">Workouts</div></div>
+          <div class="dstat"><div class="dstat-val">2,400</div><div class="dstat-lbl">Kcal/day</div></div>
+          <div class="dstat"><div class="dstat-val">Fri</div><div class="dstat-lbl">Next Game</div></div>
+        </div>
+        <div class="ai-insight">
+          <div class="ai-lbl">🤖 AI Coach Insight</div>
+          <div class="ai-txt" id="aiTxt">Loading your personalized tip...</div>
+          <button class="ai-refresh" onclick="loadAI()">↻ Refresh</button>
+        </div>
+        <div class="content-pad">
+          <div class="section-hdr">
+            <h2>Upcoming Events</h2>
+            <button class="see-all" onclick="showScreen('calendar')">Calendar →</button>
+          </div>
+          <div class="card">
+            <div class="event-row"><div class="ev-dot dot-g"></div><div class="ev-info"><div class="ev-title">Morning Practice</div><div class="ev-time">Today · 7:00 – 9:00 AM</div></div><span class="ev-tag tag-p">Practice</span></div>
+            <div class="event-row"><div class="ev-dot dot-o"></div><div class="ev-info"><div class="ev-title">Home Game vs Eastside FC</div><div class="ev-time">Fri, Apr 10 · 4:00 PM</div></div><span class="ev-tag tag-g">Game</span></div>
+            <div class="event-row"><div class="ev-dot dot-b"></div><div class="ev-info"><div class="ev-title">Strategy Meeting</div><div class="ev-time">Mon, Apr 13 · 3:00 PM</div></div><span class="ev-tag tag-m">Meeting</span></div>
+          </div>
+          <div class="section-hdr">
+            <h2>Today's Workout</h2>
+            <button class="see-all" onclick="showScreen('workouts')">View all →</button>
+          </div>
+          <div class="wo-card">
+            <div class="wo-hdr"><span class="wo-title">Strength & Conditioning</span><span class="wo-badge">45 min</span></div>
+            <div class="wo-body">
+              <div class="ex-row"><span class="ex-n">1</span><span class="ex-name">Squats</span><span class="ex-det">4×10 @ 70%</span></div>
+              <div class="ex-row"><span class="ex-n">2</span><span class="ex-name">Box Jumps</span><span class="ex-det">3×8</span></div>
+              <div class="ex-row"><span class="ex-n">3</span><span class="ex-name">Sprint Intervals</span><span class="ex-det">6×40m</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WORKOUTS -->
+      <div class="screen" id="screen-workouts">
+        <div class="topbar">
+          <button class="menu-btn" onclick="openSidebar()"><span></span><span></span><span></span></button>
+          <span class="topbar-title">Workouts</span>
+          <div class="topbar-actions">
+            <button class="tb-btn" id="addWoBtn" style="display:none" onclick="openModal('workout')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+          </div>
+        </div>
+        <div style="padding-top:8px;">
+          <div class="workout-chip-row">
+            <div class="wchip active" onclick="activateChip(this)">All</div>
+            <div class="wchip" onclick="activateChip(this)">Strength</div>
+            <div class="wchip" onclick="activateChip(this)">Cardio</div>
+            <div class="wchip" onclick="activateChip(this)">Recovery</div>
+            <div class="wchip" onclick="activateChip(this)">Pre-Game</div>
+          </div>
+          <div class="content-pad" style="padding-top:0;">
+            <div class="wo-card">
+              <div class="wo-hdr"><span class="wo-title">Lower Body Power</span><span class="wo-badge">50 min</span></div>
+              <div class="wo-body">
+                <div class="ex-row"><span class="ex-n">1</span><span class="ex-name">Back Squats</span><span class="ex-det">5×5 @ 80%</span></div>
+                <div class="ex-row"><span class="ex-n">2</span><span class="ex-name">Romanian Deadlifts</span><span class="ex-det">4×8</span></div>
+                <div class="ex-row"><span class="ex-n">3</span><span class="ex-name">Box Jumps</span><span class="ex-det">4×6</span></div>
+                <div class="ex-row"><span class="ex-n">4</span><span class="ex-name">Calf Raises</span><span class="ex-det">4×15</span></div>
+                <div class="coach-actions" id="coachWoActions" style="display:none;">
+                  <button class="cbtn cbtn-edit" onclick="openModal('workout')">✎ Edit</button>
+                  <button class="cbtn cbtn-del">✕ Delete</button>
+                </div>
+              </div>
+            </div>
+            <div class="wo-card">
+              <div class="wo-hdr" style="background:#1a6a5a;"><span class="wo-title">Upper Body Strength</span><span class="wo-badge">40 min</span></div>
+              <div class="wo-body">
+                <div class="ex-row"><span class="ex-n">1</span><span class="ex-name">Bench Press</span><span class="ex-det">4×8 @ 75%</span></div>
+                <div class="ex-row"><span class="ex-n">2</span><span class="ex-name">Pull-ups</span><span class="ex-det">3×Max</span></div>
+                <div class="ex-row"><span class="ex-n">3</span><span class="ex-name">Shoulder Press</span><span class="ex-det">3×10</span></div>
+                <div class="coach-actions" id="coachWoActions2" style="display:none;">
+                  <button class="cbtn cbtn-edit" onclick="openModal('workout')">✎ Edit</button>
+                  <button class="cbtn cbtn-del">✕ Delete</button>
+                </div>
+              </div>
+            </div>
+            <div class="wo-card">
+              <div class="wo-hdr" style="background:#0e5c4a;"><span class="wo-title">Sprint & Agility</span><span class="wo-badge">35 min</span></div>
+              <div class="wo-body">
+                <div class="ex-row"><span class="ex-n">1</span><span class="ex-name">40m Sprints</span><span class="ex-det">8×40m</span></div>
+                <div class="ex-row"><span class="ex-n">2</span><span class="ex-name">Ladder Drills</span><span class="ex-det">5 patterns × 3</span></div>
+                <div class="ex-row"><span class="ex-n">3</span><span class="ex-name">Cone Drills</span><span class="ex-det">4×60s</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEALS -->
+      <div class="screen" id="screen-meals">
+        <div class="topbar">
+          <button class="menu-btn" onclick="openSidebar()"><span></span><span></span><span></span></button>
+          <span class="topbar-title">Meal Plan</span>
+          <div class="topbar-actions">
+            <button class="tb-btn" id="addMealBtn" style="display:none" onclick="openModal('meal')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="content-pad">
+          <div class="meal-target">Daily target: 2,400 kcal · Protein: 160g · Carbs: 280g · Fat: 85g</div>
+          <div class="section-hdr"><h2>Monday</h2></div>
+          <div class="meal-card"><div class="meal-icon">🌅</div><div class="meal-info"><div class="meal-name">Oatmeal with Berries</div><div class="meal-meta">Breakfast · 7:00 AM</div><div class="macros"><span class="macro">P: 12g</span><span class="macro">C: 58g</span><span class="macro">F: 8g</span></div></div><div class="meal-cal">420 kcal</div></div>
+          <div class="meal-card"><div class="meal-icon">🥗</div><div class="meal-info"><div class="meal-name">Grilled Chicken & Quinoa</div><div class="meal-meta">Lunch · 12:30 PM</div><div class="macros"><span class="macro">P: 42g</span><span class="macro">C: 45g</span><span class="macro">F: 12g</span></div></div><div class="meal-cal">650 kcal</div></div>
+          <div class="meal-card"><div class="meal-icon">🍌</div><div class="meal-info"><div class="meal-name">Banana + Protein Shake</div><div class="meal-meta">Snack · 3:30 PM</div><div class="macros"><span class="macro">P: 30g</span><span class="macro">C: 35g</span><span class="macro">F: 4g</span></div></div><div class="meal-cal">300 kcal</div></div>
+          <div class="meal-card"><div class="meal-icon">🍗</div><div class="meal-info"><div class="meal-name">Salmon & Sweet Potato</div><div class="meal-meta">Dinner · 7:00 PM</div><div class="macros"><span class="macro">P: 38g</span><span class="macro">C: 42g</span><span class="macro">F: 18g</span></div></div><div class="meal-cal">520 kcal</div></div>
+          <div class="section-hdr" style="margin-top:8px;"><h2>Tuesday</h2></div>
+          <div class="meal-card"><div class="meal-icon">🥚</div><div class="meal-info"><div class="meal-name">Eggs & Whole Wheat Toast</div><div class="meal-meta">Breakfast · 7:00 AM</div><div class="macros"><span class="macro">P: 24g</span><span class="macro">C: 32g</span><span class="macro">F: 14g</span></div></div><div class="meal-cal">390 kcal</div></div>
+          <div class="meal-card"><div class="meal-icon">🥙</div><div class="meal-info"><div class="meal-name">Turkey & Veggie Wrap</div><div class="meal-meta">Lunch · 1:00 PM</div><div class="macros"><span class="macro">P: 36g</span><span class="macro">C: 48g</span><span class="macro">F: 10g</span></div></div><div class="meal-cal">590 kcal</div></div>
+        </div>
+      </div>
+
+      <!-- CALENDAR -->
+      <div class="screen" id="screen-calendar">
+        <div class="topbar">
+          <button class="menu-btn" onclick="openSidebar()"><span></span><span></span><span></span></button>
+          <span class="topbar-title">Calendar</span>
+          <div class="topbar-actions">
+            <button class="tb-btn" id="addEvtBtn" style="display:none" onclick="openModal('event')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="cal-nav">
+          <button class="cal-arrow" onclick="changeMonth(-1)">‹</button>
+          <span class="cal-month-title" id="calTitle">April 2026</span>
+          <button class="cal-arrow" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="cal-view-btns">
+          <button class="cvbtn active" onclick="setCalView(this,'month')">Month</button>
+          <button class="cvbtn" onclick="setCalView(this,'week')">Week</button>
+          <button class="cvbtn" onclick="setCalView(this,'day')">Day</button>
+        </div>
+        <div class="cal-grid-wrap">
+          <div class="cal-days-hdr">
+            <div class="cdn">S</div><div class="cdn">M</div><div class="cdn">T</div><div class="cdn">W</div><div class="cdn">T</div><div class="cdn">F</div><div class="cdn">S</div>
+          </div>
+          <div class="cal-days-grid" id="calGrid"></div>
+        </div>
+        <div class="content-pad" style="padding-top:12px;">
+          <div class="section-hdr"><h2>Upcoming</h2></div>
+          <div class="card">
+            <div class="event-row"><div class="ev-dot dot-g"></div><div class="ev-info"><div class="ev-title">Morning Practice</div><div class="ev-time">Wed, Apr 8 · 7:00 AM · Field 1</div></div><span class="ev-tag tag-p">Practice</span></div>
+            <div class="event-row"><div class="ev-dot dot-o"></div><div class="ev-info"><div class="ev-title">Home Game vs Eastside FC</div><div class="ev-time">Fri, Apr 10 · 4:00 PM · Home Stadium</div></div><span class="ev-tag tag-g">Game</span></div>
+            <div class="event-row"><div class="ev-dot dot-b"></div><div class="ev-info"><div class="ev-title">Strategy Meeting</div><div class="ev-time">Mon, Apr 13 · 3:00 PM · Meeting Room B</div></div><span class="ev-tag tag-m">Meeting</span></div>
+            <div class="event-row"><div class="ev-dot dot-g"></div><div class="ev-info"><div class="ev-title">Evening Practice</div><div class="ev-time">Wed, Apr 15 · 6:00 PM · Field 1</div></div><span class="ev-tag tag-p">Practice</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT LIST -->
+      <div class="screen" id="screen-chat">
+        <div class="topbar">
+          <button class="menu-btn" onclick="openSidebar()"><span></span><span></span><span></span></button>
+          <span class="topbar-title">Messages</span>
+        </div>
+        <div class="content-pad">
+          <div class="chat-list-item" onclick="openChat('Coach Williams','CW','Head Coach','#0b7a6a')">
+            <div class="c-avatar" style="background:#0b7a6a;">CW</div>
+            <div class="c-info"><div class="c-name">Coach Williams</div><div class="c-preview">Be there by 3pm for warm-up ✓</div></div>
+            <span class="unread-badge">2</span>
+          </div>
+          <div class="chat-list-item" onclick="openChat('Team Chat','⚡','All 16 Players','#e8621a')">
+            <div class="c-avatar" style="background:#e8621a;font-size:18px;">⚡</div>
+            <div class="c-info"><div class="c-name">Team Chat</div><div class="c-preview">Alex: Great practice everyone! 🔥</div></div>
+            <span class="unread-badge">5</span>
+          </div>
+          <div class="chat-list-item" onclick="openChat('Alex Johnson','AJ','Midfielder','#6366f1')">
+            <div class="c-avatar" style="background:#6366f1;">AJ</div>
+            <div class="c-info"><div class="c-name">Alex Johnson</div><div class="c-preview">You coming to gym tomorrow?</div></div>
+          </div>
+          <div class="chat-list-item" onclick="openChat('Sam Torres','ST','Goalkeeper','#854d0e')">
+            <div class="c-avatar" style="background:#854d0e;">ST</div>
+            <div class="c-info"><div class="c-name">Sam Torres</div><div class="c-preview">Good luck Friday 🙌</div></div>
+          </div>
+          <div class="chat-list-item" onclick="openChat('Riley Park','RP','Defender','#0f766e')">
+            <div class="c-avatar" style="background:#0f766e;">RP</div>
+            <div class="c-info"><div class="c-name">Riley Park</div><div class="c-preview">Did you see the new workout plan?</div></div>
+          </div>
+          <div class="chat-list-item" onclick="openChat('Morgan Lee','ML','Forward','#192231')">
+            <div class="c-avatar" style="background:#192231;">ML</div>
+            <div class="c-info"><div class="c-name">Morgan Lee</div><div class="c-preview">We need to work on set pieces</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT WINDOW (sub-screen) -->
+      <div class="screen" id="screen-chatwin" style="background:var(--bg);display:flex;flex-direction:column;">
+        <div class="chat-win-topbar">
+          <button class="back-btn" onclick="showScreen('chat')">‹</button>
+          <div class="c-avatar" style="width:34px;height:34px;font-size:12px;" id="cwAvatar">CW</div>
+          <div style="flex:1;margin-left:8px;">
+            <div style="color:white;font-size:14px;font-weight:600;" id="cwName">Coach Williams</div>
+            <div style="color:rgba(255,255,255,0.5);font-size:11px;" id="cwRole">Head Coach</div>
+          </div>
+        </div>
+        <div class="chat-messages-area" id="chatMsgs">
+          <div class="msg theirs"><div class="msg-bubble">Hey Jordan! Great effort at practice. Your sprint times are improving significantly.</div><div class="msg-time">10:32 AM</div></div>
+          <div class="msg mine"><div class="msg-bubble">Thanks Coach! The interval sessions you assigned have really helped.</div><div class="msg-time">10:35 AM</div></div>
+          <div class="msg theirs"><div class="msg-bubble">Definitely showing. Focus on recovery nutrition after sessions — check the updated meal plan.</div><div class="msg-time">10:36 AM</div></div>
+          <div class="msg mine"><div class="msg-bubble">Will do! See you at practice 💪</div><div class="msg-time">10:40 AM</div></div>
+          <div class="msg theirs"><div class="msg-bubble">Game Friday at 4pm. Be there by 3pm for warm-up. Don't be late!</div><div class="msg-time">10:41 AM</div></div>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-txt-input" type="text" id="chatInput" placeholder="Message..." onkeydown="if(event.key==='Enter')sendMsg()">
+          <button class="send-btn" onclick="sendMsg()">
+            <svg viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div class="screen" id="screen-notifications">
+        <div class="topbar">
+          <button class="menu-btn" onclick="openSidebar()"><span></span><span></span><span></span></button>
+          <span class="topbar-title">Notifications</span>
+        </div>
+        <div class="notif-hdr-row">
+          <h2>All Notifications</h2>
+          <button class="clear-btn" onclick="clearNotifs()">🗑 Clear All</button>
+        </div>
+        <div id="notifList">
+          <div class="notif-item unread"><div class="notif-ico ni-g">⚽</div><div class="notif-content"><div class="notif-title">Practice Tomorrow – 7:00 AM</div><div class="notif-body">Coach Williams scheduled morning practice on Field 1. Don't forget your boots!</div><div class="notif-time">2 hours ago</div></div></div>
+          <div class="notif-item unread"><div class="notif-ico ni-o">🍽</div><div class="notif-content"><div class="notif-title">Meal Plan Updated</div><div class="notif-body">Coach updated your weekly nutrition plan. Check the Meals section for changes.</div><div class="notif-time">5 hours ago</div></div></div>
+          <div class="notif-item unread"><div class="notif-ico ni-b">💪</div><div class="notif-content"><div class="notif-title">New Workout Added</div><div class="notif-body">Recovery session added for Sunday. Check your workout schedule.</div><div class="notif-time">Yesterday</div></div></div>
+          <div class="notif-item"><div class="notif-ico ni-o">🏆</div><div class="notif-content"><div class="notif-title">Game Reminder – Friday, Apr 10</div><div class="notif-body">Home game vs Eastside FC. Arrive by 3:00 PM for warm-up. Kickoff at 4:00 PM.</div><div class="notif-time">2 days ago</div></div></div>
+          <div class="notif-item"><div class="notif-ico ni-b">💬</div><div class="notif-content"><div class="notif-title">New message from Coach Williams</div><div class="notif-body">Pre-game strategy notes posted in team chat.</div><div class="notif-time">3 days ago</div></div></div>
+        </div>
+        <div id="emptyNotifs" class="empty-state" style="display:none;">No notifications ✓</div>
+      </div>
+
+      <!-- PLAYERS (coach only) -->
+      <div class="screen" id="screen-players">
+        <div class="topbar">
+          <button class="menu-btn" onclick="openSidebar()"><span></span><span></span><span></span></button>
+          <span class="topbar-title">Players</span>
+          <div class="topbar-actions">
+            <span style="color:rgba(255,255,255,0.5);font-size:12px;">16 players</span>
+          </div>
+        </div>
+        <div class="content-pad">
+          <div id="playerList"></div>
+        </div>
+      </div>
+
+      <!-- PROFILE -->
+      <div class="screen" id="screen-profile">
+        <div class="topbar">
+          <button class="menu-btn" onclick="openSidebar()"><span></span><span></span><span></span></button>
+          <span class="topbar-title" id="profileTopTitle">My Profile</span>
+          <button class="tb-btn" onclick="openModal('profile')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 2 2L11 14H9v-2z"/></svg>
+          </button>
+        </div>
+        <div class="profile-hero">
+          <div class="profile-avatar-lg" id="profAvatar">JS<div class="edit-avatar-btn">+</div></div>
+          <div class="profile-name" id="profName">Jordan Smith</div>
+          <div class="profile-role-txt" id="profRoleTxt">Midfielder · TeamPeak FC</div>
+          <div style="margin-top:8px;"><span class="role-pill" id="profBadge">Player</span></div>
+        </div>
+        <div class="stats-row">
+          <div class="dstat"><div class="dstat-val">#10</div><div class="dstat-lbl">Number</div></div>
+          <div class="dstat"><div class="dstat-val" style="font-size:16px;">MID</div><div class="dstat-lbl">Position</div></div>
+          <div class="dstat"><div class="dstat-val" style="font-size:16px;">5'11</div><div class="dstat-lbl">Height</div></div>
+          <div class="dstat"><div class="dstat-val" style="font-size:16px;">165</div><div class="dstat-lbl">lbs</div></div>
+        </div>
+        <div class="content-pad">
+          <div class="card" style="margin-top:12px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">Season Stats</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;">
+              <div><div style="font-size:20px;font-weight:800;color:var(--navy);">12</div><div style="font-size:10px;color:var(--muted);">Goals</div></div>
+              <div><div style="font-size:20px;font-weight:800;color:var(--navy);">8</div><div style="font-size:10px;color:var(--muted);">Assists</div></div>
+              <div><div style="font-size:20px;font-weight:800;color:var(--navy);">18</div><div style="font-size:10px;color:var(--muted);">Games</div></div>
+              <div><div style="font-size:20px;font-weight:800;color:var(--navy);">94%</div><div style="font-size:10px;color:var(--muted);">Attend.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /screens -->
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav" id="bottomNav"></div>
+
+  </div><!-- /app-shell -->
+</div><!-- /phone-frame -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleModalClick(event)">
+  <div class="modal-sheet" id="modalSheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <span class="modal-title" id="modalTitle">Add Workout</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn-sec" onclick="closeModal()">Cancel</button>
+      <button class="btn-prim" onclick="closeModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let role='player';
+let activeScreen='dashboard';
+let calYear=2026,calMonth=3;
+
+const calEvents={
+  '2026-04-08':['practice'],'2026-04-10':['game'],'2026-04-13':['meeting'],
+  '2026-04-15':['practice'],'2026-04-17':['game'],'2026-04-22':['practice'],
+  '2026-04-25':['game'],'2026-04-29':['practice'],
+};
+
+const playerNavItems=[
+  {id:'dashboard',icon:'🏠',label:'Home'},
+  {id:'workouts',icon:'💪',label:'Workouts'},
+  {id:'meals',icon:'🥗',label:'Meals'},
+  {id:'calendar',icon:'📅',label:'Calendar'},
+  {id:'chat',icon:'💬',label:'Chat'},
+  {id:'notifications',icon:'🔔',label:'Alerts'},
+  {id:'profile',icon:'👤',label:'Profile'},
+];
+const coachNavItems=[
+  {id:'dashboard',icon:'🏠',label:'Home'},
+  {id:'players',icon:'👥',label:'Players'},
+  {id:'workouts',icon:'💪',label:'Workouts'},
+  {id:'meals',icon:'🥗',label:'Meals'},
+  {id:'calendar',icon:'📅',label:'Calendar'},
+  {id:'chat',icon:'💬',label:'Chat'},
+  {id:'notifications',icon:'🔔',label:'Alerts'},
+  {id:'profile',icon:'👤',label:'Profile'},
+];
+
+const bnItems=[
+  {id:'dashboard',icon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>',lbl:'Home'},
+  {id:'workouts',icon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>',lbl:'Workout'},
+  {id:'meals',icon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.06 22.99h1.66c.84 0 1.53-.64 1.63-1.46L23 5.05h-5V1h-1.97v4.05h-4.97l.3 2.34c1.71.47 3.31 1.32 4.27 2.26 1.44 1.42 2.43 2.89 2.43 5.29v8.05zM1 21.99V21h15.03v.99c0 .55-.45 1-1.01 1H2.01c-.56 0-1.01-.45-1.01-1zm15.03-7c0-3.5-3.36-6.99-8-6.99-4.63 0-8 3.49-8 6.99h16z"/></svg>',lbl:'Meals'},
+  {id:'calendar',icon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>',lbl:'Calendar'},
+  {id:'chat',icon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>',lbl:'Chat'},
+];
+
+function renderBottomNav(){
+  const bn=document.getElementById('bottomNav');
+  bn.innerHTML=bnItems.map(i=>`
+    <button class="bn-item${activeScreen===i.id?' active':''}" onclick="showScreen('${i.id}')">
+      ${i.icon}<span>${i.lbl}</span>
+    </button>
+  `).join('');
+}
+
+function renderSidebarNav(){
+  const nav=document.getElementById('sbNav');
+  const items=role==='coach'?coachNavItems:playerNavItems;
+  nav.innerHTML='<div class="sb-section-lbl">Navigation</div>'+items.map(i=>`
+    <div class="sb-nav-item${activeScreen===i.id?' active':''}" onclick="showScreen('${i.id}');closeSidebar()">
+      <span class="sni-icon">${i.icon}</span>${i.label}
+    </div>
+  `).join('');
+}
+
+function renderPlayers(){
+  const players=[
+    {name:'Jordan Smith',init:'JS',pos:'Midfielder',color:'#0b7a6a'},
+    {name:'Alex Johnson',init:'AJ',pos:'Midfielder',color:'#e8621a'},
+    {name:'Sam Torres',init:'ST',pos:'Goalkeeper',color:'#6366f1'},
+    {name:'Riley Park',init:'RP',pos:'Defender',color:'#0f766e'},
+    {name:'Morgan Lee',init:'ML',pos:'Forward',color:'#192231'},
+    {name:'Casey Kim',init:'CK',pos:'Defender',color:'#854d0e'},
+    {name:'Drew Walsh',init:'DW',pos:'Midfielder',color:'#4f46e5'},
+    {name:'Taylor Cruz',init:'TC',pos:'Forward',color:'#0b7a6a'},
+  ];
+  document.getElementById('playerList').innerHTML=players.map(p=>`
+    <div class="player-card" onclick="viewPlayer('${p.name}','${p.init}','${p.pos}','${p.color}')">
+      <div class="pl-avatar" style="background:${p.color};">${p.init}</div>
+      <div class="pl-info"><div class="pl-name">${p.name}</div><div class="pl-pos">${p.pos}</div></div>
+      <div class="pl-stats">
+        <div class="pl-s"><div class="pl-sv">5</div><div class="pl-sl">Sessions</div></div>
+        <div class="pl-s"><div class="pl-sv">A</div><div class="pl-sl">Nutrition</div></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showScreen(id){
+  if(id==='chatwin') return;
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');});
+  const el=document.getElementById('screen-'+id);
+  if(el){el.classList.add('active');activeScreen=id;}
+  if(id==='calendar')renderCalendar();
+  if(id==='players')renderPlayers();
+  renderBottomNav();
+  renderSidebarNav();
+}
+
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sbOverlay').classList.add('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sbOverlay').classList.remove('open');
+}
+
+function switchRole(){
+  role=role==='player'?'coach':'player';
+  const isCoach=role==='coach';
+  document.getElementById('sbRoleSub').textContent=isCoach?'Coach Dashboard':'Player Dashboard';
+  document.getElementById('sbRolePill').textContent=isCoach?'Coach':'Player';
+  document.getElementById('sbName').textContent=isCoach?'Coach Williams':'Jordan Smith';
+  document.getElementById('sbAvatar').textContent=isCoach?'CW':'JS';
+  document.getElementById('switchLbl').textContent=isCoach?'Player View':'Coach View';
+  document.getElementById('profName').textContent=isCoach?'Coach Williams':'Jordan Smith';
+  document.getElementById('profRoleTxt').textContent=isCoach?'Head Coach · TeamPeak FC':'Midfielder · TeamPeak FC';
+  document.getElementById('profBadge').textContent=isCoach?'Coach':'Player';
+  document.getElementById('profAvatar').innerHTML=isCoach?'CW<div class="edit-avatar-btn">+</div>':'JS<div class="edit-avatar-btn">+</div>';
+  document.getElementById('addWoBtn').style.display=isCoach?'block':'none';
+  document.getElementById('addMealBtn').style.display=isCoach?'block':'none';
+  document.getElementById('addEvtBtn').style.display=isCoach?'block':'none';
+  document.getElementById('coachWoActions').style.display=isCoach?'flex':'none';
+  document.getElementById('coachWoActions2').style.display=isCoach?'flex':'none';
+  closeSidebar();
+  showScreen('dashboard');
+}
+
+function switchAuthTab(tab, btn){
+  document.querySelectorAll('.auth-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('loginForm').style.display=tab==='login'?'block':'none';
+  document.getElementById('registerForm').style.display=tab==='register'?'block':'none';
+}
+
+function selectRole(el, r){
+  document.querySelectorAll('.role-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function enterApp(r){
+  role=r;
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('appShell').style.display='flex';
+  if(r==='coach'){
+    document.getElementById('sbRolePill').textContent='Coach';
+    document.getElementById('sbName').textContent='Coach Williams';
+    document.getElementById('sbAvatar').textContent='CW';
+    document.getElementById('sbRoleSub').textContent='Coach Dashboard';
+    document.getElementById('switchLbl').textContent='Player View';
+    document.getElementById('addWoBtn').style.display='block';
+    document.getElementById('addMealBtn').style.display='block';
+    document.getElementById('addEvtBtn').style.display='block';
+    document.getElementById('coachWoActions').style.display='flex';
+    document.getElementById('coachWoActions2').style.display='flex';
+  }
+  renderBottomNav();
+  renderSidebarNav();
+  renderCalendar();
+  loadAI();
+}
+
+// CALENDAR
+function renderCalendar(){
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('calTitle').textContent=months[calMonth]+' '+calYear;
+  const first=new Date(calYear,calMonth,1).getDay();
+  const days=new Date(calYear,calMonth+1,0).getDate();
+  const today=new Date();
+  let html='';
+  for(let i=0;i<first;i++){
+    const d=new Date(calYear,calMonth,-(first-1-i));
+    html+=`<div class="cal-day other"><div class="day-num-wrap"><span class="day-num">${d.getDate()}</span></div></div>`;
+  }
+  for(let d=1;d<=days;d++){
+    const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=today.getFullYear()===calYear&&today.getMonth()===calMonth&&today.getDate()===d;
+    const evts=calEvents[ds]||[];
+    const ehtml=evts.map(e=>`<div class="ce ce-${e[0]}">${e==='practice'?'Prac':e==='game'?'Game':'Mtg'}</div>`).join('');
+    html+=`<div class="cal-day${isToday?' today':''}"><div class="day-num-wrap"><span class="day-num">${d}</span></div>${ehtml}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML=html;
+}
+function changeMonth(d){calMonth+=d;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+function setCalView(btn){document.querySelectorAll('.cvbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+
+// CHAT
+function openChat(name,init,roleStr,color){
+  document.getElementById('cwName').textContent=name;
+  document.getElementById('cwRole').textContent=roleStr;
+  document.getElementById('cwAvatar').textContent=init;
+  document.getElementById('cwAvatar').style.background=color;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-chatwin').classList.add('active');
+  activeScreen='chatwin';
+  renderBottomNav();
+}
+function sendMsg(){
+  const inp=document.getElementById('chatInput');
+  const txt=inp.value.trim();
+  if(!txt)return;
+  const area=document.getElementById('chatMsgs');
+  const t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  area.innerHTML+=`<div class="msg mine"><div class="msg-bubble">${txt}</div><div class="msg-time">${t}</div></div>`;
+  inp.value='';
+  area.scrollTop=area.scrollHeight;
+}
+
+// NOTIFICATIONS
+function clearNotifs(){
+  document.getElementById('notifList').innerHTML='';
+  document.getElementById('emptyNotifs').style.display='block';
+}
+
+// CHIPS
+function activateChip(el){document.querySelectorAll('.wchip').forEach(c=>c.classList.remove('active'));el.classList.add('active');}
+
+// VIEW PLAYER
+function viewPlayer(name,init,pos,color){
+  document.getElementById('profileTopTitle').textContent=name+"'s Profile";
+  document.getElementById('profName').textContent=name;
+  document.getElementById('profRoleTxt').textContent=pos+' · TeamPeak FC';
+  document.getElementById('profAvatar').innerHTML=init+'<div class="edit-avatar-btn">+</div>';
+  document.getElementById('profBadge').textContent='Player';
+  showScreen('profile');
+}
+
+// MODALS
+const modalForms={
+  workout:`<div class="form-group"><label class="form-label">Workout Name</label><input class="form-input" placeholder="e.g. Lower Body Power"></div><div class="form-row"><div class="form-group"><label class="form-label">Duration</label><input class="form-input" placeholder="45 min"></div><div class="form-group"><label class="form-label">Type</label><select class="form-select"><option>Strength</option><option>Cardio</option><option>Recovery</option><option>Pre-Game</option></select></div></div><div class="form-group"><label class="form-label">Exercises</label><textarea class="form-input" rows="4" placeholder="Squats 4×10&#10;Box Jumps 3×8&#10;Sprints 6×40m"></textarea></div><div class="form-group"><label class="form-label">Assign To</label><select class="form-select"><option>All Players</option><option>Jordan Smith</option><option>Alex Johnson</option><option>Sam Torres</option></select></div>`,
+  meal:`<div class="form-group"><label class="form-label">Meal Name</label><input class="form-input" placeholder="e.g. Grilled Chicken & Rice"></div><div class="form-row"><div class="form-group"><label class="form-label">Meal Time</label><select class="form-select"><option>Breakfast</option><option>Lunch</option><option>Snack</option><option>Dinner</option></select></div><div class="form-group"><label class="form-label">Calories</label><input class="form-input" type="number" placeholder="500"></div></div><div class="form-row"><div class="form-group"><label class="form-label">Protein (g)</label><input class="form-input" type="number" placeholder="40"></div><div class="form-group"><label class="form-label">Carbs (g)</label><input class="form-input" type="number" placeholder="60"></div></div><div class="form-group"><label class="form-label">Assign To</label><select class="form-select"><option>All Players</option><option>Jordan Smith</option><option>Alex Johnson</option></select></div>`,
+  event:`<div class="form-group"><label class="form-label">Event Name</label><input class="form-input" placeholder="e.g. Evening Practice"></div><div class="form-row"><div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date"></div><div class="form-group"><label class="form-label">Time</label><input class="form-input" type="time"></div></div><div class="form-group"><label class="form-label">Type</label><select class="form-select"><option>Practice</option><option>Game</option><option>Meeting</option></select></div><div class="form-group"><label class="form-label">Location</label><input class="form-input" placeholder="e.g. Main Field"></div>`,
+  profile:`<div class="form-group"><label class="form-label">Full Name</label><input class="form-input" value="Jordan Smith"></div><div class="form-row"><div class="form-group"><label class="form-label">Position</label><input class="form-input" value="Midfielder"></div><div class="form-group"><label class="form-label">Jersey #</label><input class="form-input" value="10"></div></div><div class="form-row"><div class="form-group"><label class="form-label">Height</label><input class="form-input" value="5'11&quot;"></div><div class="form-group"><label class="form-label">Weight (lbs)</label><input class="form-input" value="165"></div></div>`,
+};
+const modalTitles={workout:'Add Workout',meal:'Add Meal',event:'Add Event',profile:'Edit Profile'};
+function openModal(type){
+  document.getElementById('modalTitle').textContent=modalTitles[type];
+  document.getElementById('modalBody').innerHTML=modalForms[type]||'';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
+function handleModalClick(e){if(e.target===document.getElementById('modalOverlay'))closeModal();}
+
+// AI INSIGHT
+async function loadAI(){
+  const el=document.getElementById('aiTxt');
+  el.textContent='Thinking...';
+  const prompts=[
+    'Give a motivating 2-sentence performance tip for an athlete today. Short and direct. No emojis.',
+    'Give a 2-sentence nutrition reminder for a high-performance team athlete. Be practical. No emojis.',
+    'Give a 2-sentence mental performance tip for a team sport athlete. Be encouraging. No emojis.',
+  ];
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:80,messages:[{role:'user',content:prompts[Math.floor(Math.random()*3)]}]})
+    });
+    const d=await r.json();
+    el.textContent=d.content[0].text;
+  }catch(e){
+    el.textContent='Consistency is your greatest asset. Show up every day, and the results will follow.';
+  }
+}
+
+// INIT
+document.addEventListener('DOMContentLoaded',()=>{
+  // keep auth screen shown first
+});
+</script>
+</body>
+</html>
